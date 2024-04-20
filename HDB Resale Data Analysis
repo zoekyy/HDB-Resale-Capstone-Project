@@ -1,0 +1,314 @@
+import csv
+
+hdb_resale_listings = []
+
+with open('HDB_Resale_With_Geocoordinates.csv', newline='', encoding="utf8") as f:
+    reader = csv.reader(f)
+    for row in reader:
+        hdb_resale_listings.append(row)
+
+    # Remove header
+    hdb_resale_listings_headers = hdb_resale_listings[0]
+    hdb_resale_listings = hdb_resale_listings[1:]
+    
+print(hdb_resale_listings[0])
+
+import pandas as pd
+
+hdb_resale_df = pd.read_csv("HDB_Resale_With_Geocoordinates.csv")
+hdb_resale_df
+
+# Iterate through nested list of HDB resale data
+for row in hdb_resale_listings:
+    
+    # Extract data from specific columns and store into variables for easy access
+    floor_area_sqm = row[6]
+    lease_remaining = row[9]                 
+    resale_price = row[10]
+    longitude = row[12]
+    latitude = row[13]
+    
+    row[6] = float(floor_area_sqm)
+    
+    # If lease_remaining info is of string data type
+    if isinstance(lease_remaining,str):
+        row[9] = int(lease_remaining[:2]) # Get years of lease remaining with slicing, and convert it to int type
+   
+    row[10] = float(resale_price)
+    
+    if longitude == '':
+        row[12] = 0
+    else:
+        row[12] = float(longitude)
+        
+    if latitude == '':
+        row[13] = 0
+    else:
+        row[13] = float(latitude)
+
+print(hdb_resale_listings[:5]) # Print first 5 rows of data
+
+#this cell displays a snippet of the cleaned data set
+hdb_resale_df = pd.DataFrame(hdb_resale_listings, columns = hdb_resale_listings_headers)
+hdb_resale_df.head()
+
+#To answer the first case study question, we calculate the Number of Resale Flats in Each Town
+
+#We tabulate the number of resale listings in each town, and return the counts in descending order
+
+resale_counts_by_town = {}  
+
+for row in hdb_resale_listings:
+    
+    town = row[1]
+    
+    if town in resale_counts_by_town:
+        
+        resale_counts_by_town[town] += 1
+        
+    else:
+        
+        resale_counts_by_town[town] = 1
+
+sorted_towns = sorted(resale_counts_by_town.items(), key=lambda x: x[1], reverse=True)
+
+resale_counts_sorted_desc = dict(sorted_towns)
+
+print(resale_counts_sorted_desc)
+
+#Case study second question: I have been tasked by HDB to visualise the number of resale flats in each town
+
+#Using the resale_counts_sorted_desc dictionary provided below, I create a bar chart that shows the number of resale listings in each town.
+
+resale_counts_sorted_desc = {'SENGKANG': 5731, 'WOODLANDS': 5585, 'JURONG WEST': 5535, 'YISHUN': 5449, 'TAMPINES': 4679, 'PUNGGOL': 4520, 'BEDOK': 3912, 'HOUGANG': 3443, 'ANG MO KIO': 3313, 'CHOA CHU KANG': 3035, 'BUKIT MERAH': 2873, 'BUKIT PANJANG': 2836, 'BUKIT BATOK': 2724, 'TOA PAYOH': 2425, 'PASIR RIS': 2148, 'KALLANG/WHAMPOA': 2112, 'SEMBAWANG': 1946, 'QUEENSTOWN': 1927, 'GEYLANG': 1759, 'JURONG EAST': 1627, 'CLEMENTI': 1600, 'SERANGOON': 1473, 'BISHAN': 1427, 'CENTRAL AREA': 604, 'MARINE PARADE': 430, 'BUKIT TIMAH': 207}
+
+import matplotlib.pyplot as plt
+
+towns_list = list(resale_counts_sorted_desc.keys())
+count_of_resale_flats_list = list(resale_counts_sorted_desc.values())
+
+fig, ax = plt.subplots()
+ax.bar(towns_list, count_of_resale_flats_list)
+
+ax.set_xticks(towns_list)
+ax.set_xticklabels(towns_list, rotation=90)
+
+ax.set_xlabel('Town')
+ax.set_ylabel('Number of Resale Flats')
+ax.set_title('Count of Resale Flats from Jan 2017 to June 2020')
+plt.show()
+
+#Next, I have been tasked to compile the total sale value of all HDB resale flats in each town.
+
+town_resale_value_total = {} 
+
+for row in hdb_resale_listings:
+    
+    town = row[1]
+    resale_value = row[10]
+    
+    if town in town_resale_value_total:
+        
+        town_resale_value_total[town] += resale_value
+        
+    else:
+        
+        town_resale_value_total[town] = resale_value
+
+print(town_resale_value_total)
+
+#I proceed to calculate the average resale value of HDB resale flats for each town
+
+town_num_resale = {'ANG MO KIO': 3313, 'BEDOK': 3912, 'BISHAN': 1427, 'BUKIT BATOK': 2724, 'BUKIT MERAH': 2873, 'BUKIT PANJANG': 2836, 'BUKIT TIMAH': 207, 'CENTRAL AREA': 604, 'CHOA CHU KANG': 3035, 'CLEMENTI': 1600, 'GEYLANG': 1759, 'HOUGANG': 3443, 'JURONG EAST': 1627, 'JURONG WEST': 5535, 'KALLANG/WHAMPOA': 2112, 'MARINE PARADE': 430, 'PASIR RIS': 2148, 'PUNGGOL': 4520, 'QUEENSTOWN': 1927, 'SEMBAWANG': 1946, 'SENGKANG': 5731, 'SERANGOON': 1473, 'TAMPINES': 4679, 'TOA PAYOH': 2425, 'WOODLANDS': 5585, 'YISHUN': 5449}
+
+town_resale_value_total = {'ANG MO KIO': 1357482312.0, 'BEDOK': 1601193885.0, 'BISHAN': 916235793.0, 'BUKIT BATOK': 1028796332.75, 'BUKIT MERAH': 1620070583.88, 'BUKIT PANJANG': 1209331600.0, 'BUKIT TIMAH': 147040354.0, 'CENTRAL AREA': 372667936.0, 'CHOA CHU KANG': 1171810776.0, 'CLEMENTI': 753674417.0, 'GEYLANG': 752338254.0, 'HOUGANG': 1485745756.88, 'JURONG EAST': 672843405.0, 'JURONG WEST': 2152691662.6400003, 'KALLANG/WHAMPOA': 1043695205.0, 'MARINE PARADE': 220658748.0, 'PASIR RIS': 1056249716.0, 'PUNGGOL': 2048804431.88, 'QUEENSTOWN': 1069608566.76, 'SEMBAWANG': 737883437.88, 'SENGKANG': 2496125484.76, 'SERANGOON': 722415279.0, 'TAMPINES': 2215182529.0, 'TOA PAYOH': 1189419991.0, 'WOODLANDS': 2105555068.88, 'YISHUN': 1977662848.0}
+
+town_resale_average = {} 
+
+for town, resale_value in town_resale_value_total.items():
+    
+    average_resale_value = resale_value / town_num_resale[town]
+    
+    town_resale_average[town] = round(average_resale_value)
+    
+sorted_town_resale_average = sorted(town_resale_average.items(), key=lambda x: x[1], reverse=True)
+
+town_resale_average = dict(sorted_town_resale_average)
+
+print(town_resale_average)
+
+#Visualisation of the Average Resale Value of HDB Resale Flats for each town
+
+town_resale_average = {'BUKIT TIMAH': 710340, 'BISHAN': 642071, 'CENTRAL AREA': 617000, 'BUKIT MERAH': 563895, 'QUEENSTOWN': 555064, 'MARINE PARADE': 513160, 'KALLANG/WHAMPOA': 494174, 'PASIR RIS': 491736, 'TOA PAYOH': 490482, 'SERANGOON': 490438, 'TAMPINES': 473431, 'CLEMENTI': 471047, 'PUNGGOL': 453275, 'SENGKANG': 435548, 'HOUGANG': 431527, 'GEYLANG': 427708, 'BUKIT PANJANG': 426422, 'JURONG EAST': 413548, 'ANG MO KIO': 409744, 'BEDOK': 409303, 'JURONG WEST': 388924, 'CHOA CHU KANG': 386099, 'SEMBAWANG': 379180, 'BUKIT BATOK': 377679, 'WOODLANDS': 377002, 'YISHUN': 362941}
+
+import matplotlib.pyplot as plt
+
+towns_list = list(town_resale_average.keys())
+count_of_average_resale_value = list(town_resale_average.values())
+
+fig, ax = plt.subplots()
+ax.bar(towns_list, count_of_average_resale_value)
+
+ax.set_xticks(towns_list)
+ax.set_xticklabels(towns_list, rotation=90)
+
+ax.set_xlabel('Town')
+ax.set_ylabel('Average Resale Value')
+ax.set_title('Average Resale Value in Each Town')
+plt.show()
+
+#Next case study analysis : Is the lease an important factor in HDB Resale Price?
+#I visualise the relationship using a line plot
+
+average_resale_for_lease_year_remaining = {45: 226042, 46: 242145, 47: 246401, 48: 254636, 49: 260232, 50: 269885, 51: 296375, 52: 325913, 53: 354740, 54: 364082, 55: 366896, 56: 379482, 57: 362915, 58: 358926, 59: 361077, 60: 363807, 61: 363912, 62: 368609, 63: 386043, 64: 389136, 65: 401178, 66: 405131, 67: 409869, 68: 423459, 69: 431147, 70: 446439, 71: 488230, 72: 502543, 73: 513224, 74: 509820, 75: 485555, 76: 480516, 77: 467435, 78: 461030, 79: 457907, 80: 458187, 81: 448684, 82: 458495, 83: 452845, 84: 457780, 85: 475330, 86: 539646, 87: 572114, 88: 563815, 89: 536062, 90: 639708, 91: 596058, 92: 579430, 93: 521120, 94: 453963, 95: 451161, 96: 679590}
+
+lease = list(average_resale_for_lease_year_remaining.keys())
+average_resale_value = list(average_resale_for_lease_year_remaining.values())
+
+fig, ax = plt.subplots()
+ax.plot(lease, average_resale_value, marker='D')
+
+ax.set_xticks(lease)
+ax.set_xticklabels(lease)
+plt.xticks(range(0, 101, 10))
+ax.set_xlim(40,100)
+ax.set_xlabel('Lease Remaining')
+ax.set_ylabel('Resale Value')
+ax.set_title('Average Resale Value for Lease Years Remaining')
+
+fig.tight_layout()
+
+plt.show()
+
+#Next case study analysis : How does Floor Area Correlate with Resale Price?
+#I visualise this relationship between floor area and HDB resale prices.
+
+hdb_resale_df.head(3)
+
+floor_area_resale_price_list = hdb_resale_df.values.tolist()
+
+def extract_column(the_list, column_number):
+    
+    column = []
+    
+    for row in the_list:
+        
+        column.append(row[column_number])
+        
+    return column
+
+floor_area_sqm_list = extract_column(floor_area_resale_price_list, 6)
+resale_price_list = extract_column(floor_area_resale_price_list, 10)
+
+import matplotlib.pyplot as plt
+
+
+fig, ax = plt.subplots(figsize=(18,12))
+ax.scatter(floor_area_sqm_list, resale_price_list)
+
+
+ax.set_xlabel("Floor Area (in square metres)")
+ax.set_ylabel("Sale Price (in million SGD)")
+ax.set_title("Relationship Between Floor Area & Resale Price")
+ax.set_ylim(0, 1.3e6)
+
+plt.show()
+
+#Next case study question : to investigate the price distribution of 4-room HDB resale flats in these select towns : Punggol, Tampines, Woodlands, Clementi and Yishun
+#I visualise this using a boxplot
+
+punggol = []
+tampines = []
+woodlands = []
+clementi = []
+yishun = []
+
+for row in hdb_resale_listings:
+    
+    if row[2] == '4 ROOM':
+        
+        town = row[1]
+        
+        if town == 'PUNGGOL':
+            punggol.append(row[10])
+            
+        elif town == 'TAMPINES':
+            tampines.append(row[10])
+            
+        elif town == 'WOODLANDS':
+            woodlands.append(row[10])
+            
+        elif town == 'CLEMENTI':
+            clementi.append(row[10])
+            
+        elif town == 'YISHUN':
+            yishun.append(row[10])
+     
+# Print the first 5 items in each list
+print(punggol[:5])
+print(tampines[:5])
+print(woodlands[:5])
+print(clementi[:5])
+print(yishun[:5])
+
+fig, ax = plt.subplots()
+ax.boxplot([punggol, tampines, woodlands, clementi, yishun])
+
+ax.set_xticklabels(["Punggol", "Tampines", "Woodlands", "Clementi", "Yishun"])
+ax.set_ylabel("Resale Value (in SGD)")
+ax.set_title("Resale Value of 4-Room flats from Jan 2017 to Jun 2020")
+
+plt.show()
+
+
+#I improve my analysis by visualising a heatmap : a Heatmap of all 4 room resale listings in Singapore
+
+import folium
+from folium.plugins import HeatMap
+
+## Write your code below
+
+lat_long_4_room = []
+
+for row in hdb_resale_listings:
+    
+    lat = row[-1]
+    long = row[-2]
+    
+    if row[2] == '4 ROOM':
+        
+        lat_long_4_room.append([lat,long])
+ 
+
+base_map = folium.Map([1.357,103.826], zoom_start=11.4)
+
+HeatMap(lat_long_4_room, radius=8, gradient={0.2:'blue', 0.4:'purple', 0.6:'orange', 1.0:'red'}).add_to(base_map)
+
+display(base_map)
+
+#I add a folium marker cluster to visualise the geographical distribution & resales prices of all 4-rooms HDB resale listings in Singapore.
+
+from folium.plugins import MarkerCluster
+
+resale_price_4_room = []
+
+for row in hdb_resale_listings:
+    
+    resale_price_4_room.append(row[-4])
+    
+base_map = folium.Map([1.357,103.826], height=550, width=900, zoom_start=11.5)
+
+cluster = MarkerCluster().add_to(base_map)
+
+for i in range(0,len(lat_long_4_room)):
+    
+    lat_long_of_single_listing = lat_long_4_room[i]
+    
+    price = '$' + str(resale_price_4_room[i])
+    
+    tooltip = 'Click to view price'
+    
+    folium.Marker(lat_long_of_single_listing, popup=price, tooltip=tooltip).add_to(cluster)
+    
+display(base_map)
+
